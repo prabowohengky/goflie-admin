@@ -7,7 +7,7 @@ export default {
 if (url.pathname === "/" || url.pathname === "/index.html") {
 
   return Response.redirect(
-    "https://raw.githubusercontent.com/USERNAME/REPOSITORY/main/index.html",
+    "https://raw.githubusercontent.com/prabowohengky/goflie-admin/refs/heads/main/index.html",
     302
   );
 
