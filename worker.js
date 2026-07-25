@@ -1,58 +1,69 @@
-export default {
-  async fetch(request, env) {
-    const url = new URL(request.url);
-
-    // Home
-    if (url.pathname === "/") {
-      return new Response("GoFlie Admin API");
-    }
-
-    // List links
-    if (url.pathname === "/api/list") {
-      const { results } = await env.DB
-        .prepare("SELECT * FROM links ORDER BY created_at DESC")
-        .all();
-
-      return Response.json(results);
-    }
-
-    // Create link
-    if (url.pathname === "/api/create" && request.method === "POST") {
-      const body = await request.json();
-
-      await env.DB.prepare(
-        "INSERT INTO links (slug, original_url, title, created_at) VALUES (?, ?, ?, ?)"
-      )
-        .bind(
-          body.slug,
-          body.url,
-          "",
-          Date.now()
-        )
-        .run();
-
-      return Response.json({
-        success: true
-      });
-    }
-
-    // Delete link
-    if (url.pathname.startsWith("/api/delete/")) {
-      const slug = url.pathname.split("/").pop();
-
-      await env.DB.prepare(
-        "DELETE FROM links WHERE slug=?"
-      )
-        .bind(slug)
-        .run();
-
-      return Response.json({
-        success: true
-      });
-    }
-
-    return new Response("404 Not Found", {
-      status: 404
+forEach(item => {
+        const tr = document.createElement('tr');
+        const shortUrl = window.location.origin + '/' + item.slug;
+        tr.innerHTML = \`
+            <td><a href="/\${item.slug}" target="_blank">\${item.slug}</a></td>
+            <td><a href="\${item.original_url}" target="_blank">\${item.original_url}</a></td>
+            <td>
+                <button class="copy" onclick="copyText('\${shortUrl}')">Copy</button>
+                <button class="edit" onclick="editLink('\${item.slug}', '\${item.original_url}')">Edit</button>
+                <button class="delete" onclick="deleteLink('\${item.slug}')">Delete</button>
+            </td>
+        \`;
+        tbody.appendChild(tr);
     });
-  }
 }
+
+async function create() {
+    const slug = document.getElementById('slug').value.trim();
+    const url = document.getElementById('url').value.trim();
+    if (!slug || !url) {
+        alert('Please fill in both slug and URL');
+        return;
+    }
+    const res = await fetch('/api/create', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({slug, url})
+    });
+    if (res.ok) {
+        document.getElementById('slug').value = '';
+        document.getElementById('url').value = '';
+        load();
+    } else {
+        alert('Error creating link');
+    }
+}
+
+async function editLink(slug, oldUrl) {
+    const newUrl = prompt('Enter new URL:', oldUrl);
+    if (!newUrl) return;
+    const res = await fetch('/api/update', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({slug, url: newUrl})
+    });
+    if (res.ok) load();
+}
+
+async function deleteLink(slug) {
+    if (!confirm('Are you sure you want to delete ' + slug + '?')) return;
+    const res = await fetch('/api/delete/' + slug);
+    if (res.ok) load();
+}
+
+function copyText(text) {
+    navigator.clipboard.writeText(text);
+    alert('Copied: ' + text);
+}
+
+function searchLinks() {
+    const query = document.getElementById('search').value.toLowerCase();
+    const filtered = allLinks.filter(item => item.slug.toLowerCase().includes(query));
+    displayLinks(filtered);
+}
+
+load();
+</script>
+</body>
+</html>`;
