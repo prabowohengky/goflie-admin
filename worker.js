@@ -2,7 +2,15 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 if (url.pathname === "/index.html") {
-  return fetch("https://raw.githubusercontent.com/prabowohengky/goflie-admin/main/index.html");
+  const html = await fetch(
+    "https://raw.githubusercontent.com/prabowohengky/goflie-admin/main/index.html"
+  ).then(r => r.text());
+
+  return new Response(html, {
+    headers: {
+      "Content-Type": "text/html; charset=UTF-8"
+    }
+  });
 }
     // Home
     if (url.pathname === "/") {
