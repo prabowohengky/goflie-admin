@@ -172,7 +172,188 @@ onclick="create()">
 
 </table>
 
-<!-- Part 2 (JavaScript) នឹងដាក់នៅទីនេះ -->
+<script>
+
+const API="https://goflie.xyz";
+
+function randomSlug(length=6){
+
+const chars="abcdefghijklmnopqrstuvwxyz0123456789";
+
+let slug="";
+
+for(let i=0;i<length;i++){
+
+slug+=chars[Math.floor(Math.random()*chars.length)];
+
+}
+
+return slug;
+
+}
+
+let links=[];
+
+async function load(){
+
+const res=await fetch(API+"/api/list");
+
+links=await res.json();
+
+document.getElementById("total").innerText=links.length;
+
+render(links);
+
+}
+
+function render(data){
+
+document.getElementById("list").innerHTML=data.map(x=>`
+
+<tr>
+
+<td>${x.slug}</td>
+
+<td>
+<a href="${x.original_url}" target="_blank">
+${x.original_url}
+</a>
+</td>
+
+<td>
+
+<button class="copy"
+onclick="copyLink('${x.slug}')">
+Copy
+</button>
+
+<button class="edit"
+onclick="editLink('${x.slug}','${x.original_url}')">
+Edit
+</button>
+
+<button class="delete"
+onclick="removeLink('${x.slug}')">
+Delete
+</button>
+
+</td>
+
+</tr>
+
+`).join("");
+
+}
+
+function searchLinks(){
+
+const keyword=document.getElementById("search").value.toLowerCase();
+
+const result=links.filter(x=>
+
+x.slug.toLowerCase().includes(keyword) ||
+
+x.original_url.toLowerCase().includes(keyword)
+
+);
+
+render(result);
+
+}
+
+async function create(){
+
+const url=document.getElementById("url").value.trim();
+
+if(!url){
+
+alert("Please enter URL");
+
+return;
+
+}
+
+const slug=randomSlug();
+
+await fetch(API+"/api/create",{
+
+method:"POST",
+
+headers:{
+
+"Content-Type":"application/json"
+
+},
+
+body:JSON.stringify({
+
+slug:slug,
+
+url:url
+
+})
+
+});
+
+document.getElementById("url").value="";
+
+load();
+
+}
+
+async function editLink(slug,oldUrl){
+
+const newUrl=prompt("Edit URL",oldUrl);
+
+if(!newUrl) return;
+
+await fetch(API+"/api/update",{
+
+method:"POST",
+
+headers:{
+
+"Content-Type":"application/json"
+
+},
+
+body:JSON.stringify({
+
+slug:slug,
+
+url:newUrl
+
+})
+
+});
+
+load();
+
+}
+
+async function removeLink(slug){
+
+if(!confirm("Delete "+slug+" ?")) return;
+
+await fetch(API+"/api/delete/"+slug);
+
+load();
+
+}
+
+function copyLink(slug){
+
+const link="https://goflie.xyz/"+slug;
+
+navigator.clipboard.writeText(link);
+
+alert("Copied:\n"+link);
+
+}
+
+load();
+
+</script>
 
 </body>
 </html>
