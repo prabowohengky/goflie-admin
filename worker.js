@@ -6,10 +6,10 @@ export default {
 // Dashboard
 if (url.pathname === "/" || url.pathname === "/index.html") {
 
-  return Response.redirect(
-    "https://raw.githubusercontent.com/prabowohengky/goflie-admin/refs/heads/main/index.html",
-    302
-  );
+return Response.redirect(
+"https://prabowohengky.github.io/goflie-admin/",
+302
+);
 
 }
 
