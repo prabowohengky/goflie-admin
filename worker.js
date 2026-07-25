@@ -2,22 +2,39 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    // Home
-    if (url.pathname === "/") {
-      return new Response("GoFlie Admin API");
+    // =========================
+    // HOME
+    // =========================
+    if (
+      url.pathname === "/" ||
+      url.pathname === "/index.html"
+    ) {
+      return fetch(
+        "https://prabowohengky.github.io/goflie-admin/",
+        request
+      );
     }
 
-    // List links
+    // =========================
+    // LIST LINKS
+    // =========================
     if (url.pathname === "/api/list") {
       const { results } = await env.DB
-        .prepare("SELECT * FROM links ORDER BY created_at DESC")
+        .prepare(
+          "SELECT * FROM links ORDER BY created_at DESC"
+        )
         .all();
 
       return Response.json(results);
     }
 
-    // Create link
-    if (url.pathname === "/api/create" && request.method === "POST") {
+    // =========================
+    // CREATE LINK
+    // =========================
+    if (
+      url.pathname === "/api/create" &&
+      request.method === "POST"
+    ) {
       const body = await request.json();
 
       await env.DB.prepare(
@@ -26,7 +43,7 @@ export default {
         .bind(
           body.slug,
           body.url,
-          "",
+          body.title || "",
           Date.now()
         )
         .run();
@@ -36,7 +53,9 @@ export default {
       });
     }
 
-    // Delete link
+    // =========================
+    // DELETE LINK
+    // =========================
     if (url.pathname.startsWith("/api/delete/")) {
       const slug = url.pathname.split("/").pop();
 
@@ -49,6 +68,30 @@ export default {
       return Response.json({
         success: true
       });
+    }
+
+    // =========================
+    // REDIRECT
+    // =========================
+    const slug = url.pathname.substring(1);
+
+    if (
+      slug &&
+      !slug.startsWith("api")
+    ) {
+      const { results } = await env.DB
+        .prepare(
+          "SELECT original_url FROM links WHERE slug=? LIMIT 1"
+        )
+        .bind(slug)
+        .all();
+
+      if (results.length) {
+        return Response.redirect(
+          results[0].original_url,
+          302
+        );
+      }
     }
 
     return new Response("404 Not Found", {
