@@ -60,7 +60,22 @@ if (url.pathname === "/index.html") {
         success: true
       });
     }
+// Redirect
+const slug = url.pathname.slice(1);
 
+if (
+  slug &&
+  slug !== "index.html" &&
+  !slug.startsWith("api/")
+) {
+  const row = await env.DB.prepare(
+    "SELECT original_url FROM links WHERE slug=?"
+  ).bind(slug).first();
+
+  if (row) {
+    return Response.redirect(row.original_url, 302);
+  }
+}
     return new Response("404 Not Found", {
       status: 404
     });
