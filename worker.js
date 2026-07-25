@@ -4,19 +4,29 @@ export default {
 
     // Home
     if (url.pathname === "/") {
-      return new Response("Goflie Admin API");
+      return new Response("GoFlie Admin API");
     }
 
-    // Create Short Link
+    // List links
+    if (url.pathname === "/api/list") {
+      const { results } = await env.DB
+        .prepare("SELECT * FROM links ORDER BY created_at DESC")
+        .all();
+
+      return Response.json(results);
+    }
+
+    // Create link
     if (url.pathname === "/api/create" && request.method === "POST") {
       const body = await request.json();
 
       await env.DB.prepare(
-        "INSERT INTO links (slug, original_url, created_at) VALUES (?, ?, ?)"
+        "INSERT INTO links (slug, original_url, title, created_at) VALUES (?, ?, ?, ?)"
       )
         .bind(
           body.slug,
-          body.original_url,
+          body.url,
+          "",
           Date.now()
         )
         .run();
@@ -26,13 +36,19 @@ export default {
       });
     }
 
-    // List Links
-    if (url.pathname === "/api/list") {
-      const result = await env.DB.prepare(
-        "SELECT * FROM links ORDER BY created_at DESC"
-      ).all();
+    // Delete link
+    if (url.pathname.startsWith("/api/delete/")) {
+      const slug = url.pathname.split("/").pop();
 
-      return Response.json(result.results);
+      await env.DB.prepare(
+        "DELETE FROM links WHERE slug=?"
+      )
+        .bind(slug)
+        .run();
+
+      return Response.json({
+        success: true
+      });
     }
 
     return new Response("404 Not Found", {
