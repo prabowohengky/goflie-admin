@@ -2,39 +2,72 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>GoFlie Admin</title>
+
 <style>
 body{
     background:#111;
     color:#fff;
-    font-family:Arial,sans-serif;
+    font-family:Arial;
     max-width:900px;
     margin:auto;
     padding:20px;
 }
+
+h2{
+    text-align:center;
+}
+
 input{
     width:100%;
-    padding:10px;
+    padding:12px;
     margin:8px 0;
-}
-button{
-    background:#00c853;
+    background:#222;
     color:#fff;
-    border:none;
-    padding:10px 20px;
-    cursor:pointer;
+    border:1px solid #444;
 }
+
+button{
+    padding:10px 18px;
+    border:none;
+    cursor:pointer;
+    color:#fff;
+    margin:2px;
+}
+
+.create{
+    background:#00c853;
+}
+
+.copy{
+    background:#2962ff;
+}
+
+.delete{
+    background:#d50000;
+}
+
 table{
     width:100%;
-    margin-top:20px;
     border-collapse:collapse;
+    margin-top:20px;
 }
+
 td,th{
     border:1px solid #333;
-    padding:8px;
+    padding:10px;
+}
+
+th{
+    background:#222;
+}
+
+a{
+    color:#00e5ff;
 }
 </style>
+
 </head>
 <body>
 
@@ -42,50 +75,131 @@ td,th{
 
 <input id="slug" placeholder="Slug">
 <input id="url" placeholder="Original URL">
-<button onclick="create()">Create</button>
+
+<button class="create" onclick="create()">Create</button>
 
 <table>
+
 <thead>
+
 <tr>
 <th>Slug</th>
 <th>URL</th>
+<th>Action</th>
 </tr>
+
 </thead>
-<tbody id="list"></tbody>
+
+<tbody id="list">
+
+</tbody>
+
 </table>
 
 <script>
+
 const API="https://goflie-admin-v3.ozkan-bahcivan.workers.dev";
 
 async function load(){
+
 const res=await fetch(API+"/api/list");
+
 const data=await res.json();
 
 document.getElementById("list").innerHTML=data.map(x=>`
+
 <tr>
+
 <td>${x.slug}</td>
-<td>${x.original_url}</td>
+
+<td>
+<a href="${x.original_url}" target="_blank">
+${x.original_url}
+</a>
+</td>
+
+<td>
+
+<button class="copy"
+onclick="copyLink('${x.slug}')">
+Copy
+</button>
+
+<button class="delete"
+onclick="removeLink('${x.slug}')">
+Delete
+</button>
+
+</td>
+
 </tr>
+
 `).join("");
+
 }
 
 async function create(){
 
+const slug=document.getElementById("slug").value.trim();
+
+const url=document.getElementById("url").value.trim();
+
+if(!slug||!url){
+
+alert("Fill all fields");
+
+return;
+
+}
+
 await fetch(API+"/api/create",{
+
 method:"POST",
+
 headers:{
 "Content-Type":"application/json"
 },
+
 body:JSON.stringify({
-slug:document.getElementById("slug").value,
-url:document.getElementById("url").value
+
+slug:slug,
+
+url:url
+
 })
+
 });
 
+document.getElementById("slug").value="";
+
+document.getElementById("url").value="";
+
 load();
+
+}
+
+async function removeLink(slug){
+
+if(!confirm("Delete "+slug+" ?")) return;
+
+await fetch(API+"/api/delete/"+slug);
+
+load();
+
+}
+
+function copyLink(slug){
+
+const link=API+"/"+slug;
+
+navigator.clipboard.writeText(link);
+
+alert("Copied:\n"+link);
+
 }
 
 load();
+
 </script>
 
 </body>
