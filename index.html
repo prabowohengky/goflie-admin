@@ -2,152 +2,79 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GoFlie Admin v2</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GoFlie Admin</title>
 
 <style>
-
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-}
-
 body{
     background:#111;
     color:#fff;
     font-family:Arial,sans-serif;
-    max-width:1100px;
+    max-width:1000px;
     margin:auto;
-    padding:20px;
+    padding:30px;
 }
-
-h1{
+h2{
     text-align:center;
-    margin-bottom:20px;
 }
-
-.top{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin-bottom:20px;
-    flex-wrap:wrap;
-    gap:10px;
-}
-
-.total{
-    font-size:18px;
-    font-weight:bold;
-}
-
 input{
     width:100%;
     padding:12px;
-    margin:8px 0;
+    margin:10px 0;
     background:#222;
     color:#fff;
     border:1px solid #444;
-    border-radius:6px;
+    border-radius:5px;
+    box-sizing:border-box;
 }
-
 button{
-    padding:10px 16px;
     border:none;
-    border-radius:6px;
-    cursor:pointer;
+    padding:10px 18px;
     color:#fff;
+    cursor:pointer;
+    border-radius:4px;
+    margin-right:5px;
 }
-
-.add{
+.create{
     background:#00c853;
 }
-
 .copy{
     background:#1565c0;
 }
-
-.edit{
-    background:#ff9800;
-}
-
 .delete{
     background:#d50000;
 }
-
-.refresh{
-    background:#555;
-}
-
 table{
     width:100%;
     margin-top:20px;
     border-collapse:collapse;
 }
-
 th,td{
     border:1px solid #333;
     padding:10px;
-    text-align:left;
 }
-
 th{
     background:#222;
 }
-
 a{
     color:#00e5ff;
     text-decoration:none;
 }
-
-.search{
-    margin-top:10px;
-}
-
-@media(max-width:768px){
-
-table{
-    display:block;
-    overflow-x:auto;
-}
-
-}
-
 </style>
 
 </head>
-
 <body>
 
-<h1>GoFlie Admin v2</h1>
-
-<div class="top">
-
-<div class="total">
-Total Links :
-<span id="total">0</span>
-</div>
-
-<button class="refresh" onclick="load()">
-Refresh
-</button>
-
-</div>
-
-<input
-id="search"
-class="search"
-placeholder="Search slug..."
-onkeyup="searchLinks()">
+<h2>GoFlie Admin Dashboard</h2>
 
 <input
 id="url"
 placeholder="https://example.com">
 
 <button
-class="add"
+class="create"
 onclick="create()">
-➕ Add Link
+Create
 </button>
 
 <table>
@@ -155,26 +82,20 @@ onclick="create()">
 <thead>
 
 <tr>
-
 <th>Slug</th>
-
-<th>Original URL</th>
-
+<th>URL</th>
 <th>Action</th>
-
 </tr>
 
 </thead>
 
-<tbody id="list">
-
-</tbody>
+<tbody id="list"></tbody>
 
 </table>
 
 <script>
 
-const API="https://goflie.xyz";
+const API = "https://goflie.xyz";
 
 function randomSlug(length=6){
 
@@ -192,21 +113,11 @@ return slug;
 
 }
 
-let links=[];
-
 async function load(){
 
 const res=await fetch(API+"/api/list");
 
-links=await res.json();
-
-document.getElementById("total").innerText=links.length;
-
-render(links);
-
-}
-
-function render(data){
+const data=await res.json();
 
 document.getElementById("list").innerHTML=data.map(x=>`
 
@@ -215,26 +126,31 @@ document.getElementById("list").innerHTML=data.map(x=>`
 <td>${x.slug}</td>
 
 <td>
+
 <a href="${x.original_url}" target="_blank">
+
 ${x.original_url}
+
 </a>
+
 </td>
 
 <td>
 
-<button class="copy"
+<button
+class="copy"
 onclick="copyLink('${x.slug}')">
+
 Copy
+
 </button>
 
-<button class="edit"
-onclick="editLink('${x.slug}','${x.original_url}')">
-Edit
-</button>
-
-<button class="delete"
+<button
+class="delete"
 onclick="removeLink('${x.slug}')">
+
 Delete
+
 </button>
 
 </td>
@@ -242,22 +158,6 @@ Delete
 </tr>
 
 `).join("");
-
-}
-
-function searchLinks(){
-
-const keyword=document.getElementById("search").value.toLowerCase();
-
-const result=links.filter(x=>
-
-x.slug.toLowerCase().includes(keyword) ||
-
-x.original_url.toLowerCase().includes(keyword)
-
-);
-
-render(result);
 
 }
 
@@ -296,36 +196,6 @@ url:url
 });
 
 document.getElementById("url").value="";
-
-load();
-
-}
-
-async function editLink(slug,oldUrl){
-
-const newUrl=prompt("Edit URL",oldUrl);
-
-if(!newUrl) return;
-
-await fetch(API+"/api/update",{
-
-method:"POST",
-
-headers:{
-
-"Content-Type":"application/json"
-
-},
-
-body:JSON.stringify({
-
-slug:slug,
-
-url:newUrl
-
-})
-
-});
 
 load();
 
