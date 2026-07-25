@@ -1,7 +1,9 @@
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-
+if (url.pathname === "/index.html") {
+  return fetch("https://raw.githubusercontent.com/prabowohengky/goflie-admin/main/index.html");
+}
     // Home
     if (url.pathname === "/") {
       return new Response("GoFlie Admin API");
