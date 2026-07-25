@@ -4,32 +4,89 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GoFlie Admin</title>
-<link rel="stylesheet" href="style.css">
+<style>
+body{
+    background:#111;
+    color:#fff;
+    font-family:Arial,sans-serif;
+    max-width:900px;
+    margin:auto;
+    padding:20px;
+}
+input{
+    width:100%;
+    padding:10px;
+    margin:8px 0;
+}
+button{
+    background:#00c853;
+    color:#fff;
+    border:none;
+    padding:10px 20px;
+    cursor:pointer;
+}
+table{
+    width:100%;
+    margin-top:20px;
+    border-collapse:collapse;
+}
+td,th{
+    border:1px solid #333;
+    padding:8px;
+}
+</style>
 </head>
 <body>
 
-<div class="container">
-    <h1>GoFlie Admin Dashboard</h1>
+<h2>GoFlie Admin Dashboard</h2>
 
-    <div class="card">
-        <input id="slug" placeholder="Slug">
-        <input id="url" placeholder="Original URL">
-        <button onclick="createLink()">Create</button>
-    </div>
+<input id="slug" placeholder="Slug">
+<input id="url" placeholder="Original URL">
+<button onclick="create()">Create</button>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Slug</th>
-                <th>Original URL</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody id="links"></tbody>
-    </table>
-</div>
+<table>
+<thead>
+<tr>
+<th>Slug</th>
+<th>URL</th>
+</tr>
+</thead>
+<tbody id="list"></tbody>
+</table>
 
-<script src="app.js"></script>
+<script>
+const API="https://goflie-admin-v3.ozkan-bahcivan.workers.dev";
+
+async function load(){
+const res=await fetch(API+"/api/list");
+const data=await res.json();
+
+document.getElementById("list").innerHTML=data.map(x=>`
+<tr>
+<td>${x.slug}</td>
+<td>${x.original_url}</td>
+</tr>
+`).join("");
+}
+
+async function create(){
+
+await fetch(API+"/api/create",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+slug:document.getElementById("slug").value,
+url:document.getElementById("url").value
+})
+});
+
+load();
+}
+
+load();
+</script>
 
 </body>
 </html>
