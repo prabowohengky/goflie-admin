@@ -3,10 +3,15 @@ export default {
 
     const url = new URL(request.url);
 
-    // Dashboard
-    if (url.pathname === "/") {
-      return env.ASSETS.fetch(request);
-    }
+// Dashboard
+if (url.pathname === "/" || url.pathname === "/index.html") {
+
+  return Response.redirect(
+    "https://raw.githubusercontent.com/USERNAME/REPOSITORY/main/index.html",
+    302
+  );
+
+}
 
     // List
     if (url.pathname === "/api/list") {
