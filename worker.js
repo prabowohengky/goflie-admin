@@ -7,7 +7,7 @@ export default {
 if (url.pathname === "/" || url.pathname === "/index.html") {
 
 return Response.redirect(
-"https://https://goflie.xyz//goflie-admin/",
+"https://prabowohengky.github.io/goflie-admin/",
 302
 );
 
